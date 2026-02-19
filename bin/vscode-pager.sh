@@ -28,4 +28,4 @@ cat "$file" > "$tmpfile_ext"
 
 # 4. Open the temporary file in VS Code and wait until the tab is closed.
 #    The -w flag is essential for git to work correctly.
-code -w "$tmpfile_ext"
+${(z)GIT_EDITOR} "$tmpfile_ext"
