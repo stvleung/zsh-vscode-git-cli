@@ -9,14 +9,23 @@ fi
 
 # 1. Create a temporary file with a .ansi extension.
 #    The ANSI Colors extension will activate based on this extension.
-local tmpfile=$(mktemp /tmp/git-log.XXXXXX.ansi)
+local tmpfile=$(mktemp /tmp/git-log.XXXXXX)
+if [ "$?" -ne 0 ]; then
+  echo "Failed to create temporary file" >&2
+  exit 1
+fi
 
-# 2. Read the content from standard input (from git) and write it to the temp file.
-cat "$file" > "$tmpfile"
+local tmpfile_ext="${tmpfile}.ansi"
+mv "$tmpfile" "$tmpfile_ext"
 
-# 3. Open the temporary file in VS Code and wait until the tab is closed.
+# 2. Set up the trap
+# This removes the file on EXIT (normal finish),
+# SIGINT (Ctrl+C), and SIGTERM (kill command).
+trap 'rm -f "$tmpfile_ext"' EXIT SIGINT SIGTERM
+
+# 3. Read the content from standard input (from git) and write it to the temp file.
+cat "$file" > "$tmpfile_ext"
+
+# 4. Open the temporary file in VS Code and wait until the tab is closed.
 #    The -w flag is essential for git to work correctly.
-code -w "$tmpfile"
-
-# 4. Clean up by deleting the temporary file after it's been closed.
-rm "$tmpfile"
+code -w "$tmpfile_ext"
